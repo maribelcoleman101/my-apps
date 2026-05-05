@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<!-- saved from url=(0059)file:///C:/Users/bel/Downloads/maintenance_clean%20(1).html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Property Maintenance</title>
+<link href="file:///C:/Users/bel/Downloads/maintenance_tracker_realtime_Final_files/css2" rel="stylesheet">
+<style>
+:root {
+  --bg:#f4f2ed; --surface:#fff; --surface2:#f0ede7; --border:#ddd9d0; --border2:#c6c1b6;
+  --text:#1a1816; --text2:#6a6760; --text3:#9c9890;
+  --red:#b83228; --red-bg:#fdf0ee; --red-border:#f0a898;
+  --amber:#a05c08; --amber-bg:#fef6eb;
+  --green:#2a6e38; --green-bg:#eef7f1; --green-border:#9ecfaa;
+  --blue:#1356a0; --blue-bg:#edf4fd;
+  --radius:10px; --radius-sm:7px; --radius-xs:5px;
+  --shadow:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column}
+
+/* HEADER */
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 1rem;display:flex;align-items:center;justify-content:space-between;height:54px;flex-shrink:0}
+.logo{font-size:15px;font-weight:600;letter-spacing:-.3px}
+.logo span{color:var(--text3);font-weight:400}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;margin-right:6px}
+.sync-dot.offline{background:var(--text3)}
+.sync-label{font-size:12px;color:var(--text3)}
+
+/* METRICS */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:.75rem 1rem;flex-shrink:0}
+.metric{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:.75rem .5rem;text-align:center}
+.metric-num{font-size:22px;font-weight:600;line-height:1;font-family:'DM Mono',monospace}
+.metric-label{font-size:10px;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:.4px}
+.num-red{color:var(--red)}.num-amber{color:var(--amber)}.num-green{color:var(--green)}.num-blue{color:var(--blue)}
+
+/* TABS */
+.tabs{display:flex;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tabs::-webkit-scrollbar{display:none}
+.tab{font-size:13px;padding:10px 16px;cursor:pointer;border:none;background:none;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;font-family:'DM Sans',sans-serif;font-weight:500;flex-shrink:0}
+.tab.active{color:var(--text);border-bottom-color:var(--text)}
+
+/* CONTENT */
+.content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.section{display:none;padding:1rem}
+.section.active{display:block}
+.section-title{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:.875rem 1rem;margin-bottom:.875rem;box-shadow:var(--shadow)}
+.card.danger{border-color:var(--red-border)}
+
+/* TASKS */
+.task-row{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.task-row:last-child{border-bottom:none}
+.task-check{width:22px;height:22px;border-radius:6px;border:1.5px solid var(--border2);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s;margin-top:1px}
+.task-check.done{background:var(--green);border-color:var(--green);color:#fff}
+.task-info{flex:1;min-width:0}
+.task-name{font-size:14px;line-height:1.3}
+.task-done .task-name{text-decoration:line-through;color:var(--text3)}
+.task-meta{font-size:12px;color:var(--text3);margin-top:3px}
+.task-assign{font-size:11px;padding:2px 9px;border-radius:20px;background:var(--surface2);color:var(--text2);white-space:nowrap;flex-shrink:0;margin-top:2px}
+.overdue-badge{font-size:10px;padding:2px 7px;border-radius:20px;background:var(--red-bg);color:var(--red);font-weight:600;margin-left:6px}
+.edit-btn{font-size:11px;padding:3px 10px;border-radius:var(--radius-xs);border:1px solid var(--border);background:none;cursor:pointer;color:var(--text3);font-family:'DM Sans',sans-serif;flex-shrink:0;margin-top:1px}
+
+/* SUPPLIES */
+.supply-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.supply-row:last-child{border-bottom:none}
+.supply-name{font-size:14px;flex:1;min-width:0}
+.supply-meta{font-size:11px;color:var(--text3);margin-top:2px}
+.supply-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0}
+.supply-qty{font-size:13px;font-weight:600;font-family:'DM Mono',monospace}
+.reorder-btn{font-size:11px;padding:4px 10px;border-radius:var(--radius-xs);border:1px solid var(--border2);background:none;cursor:pointer;color:var(--text2);font-family:'DM Sans',sans-serif;transition:all .15s;white-space:nowrap}
+.reorder-btn.ordered{background:var(--green-bg);border-color:var(--green-border);color:var(--green)}
+.supply-bar-wrap{width:80px;height:5px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.supply-bar{height:100%;border-radius:3px;transition:width .3s}
+
+/* PROPERTIES */
+.prop-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.prop-row:last-child{border-bottom:none}
+.prop-icon{width:38px;height:38px;border-radius:var(--radius-sm);background:var(--blue-bg);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.prop-info{flex:1}
+.prop-name{font-size:14px;font-weight:500}
+.prop-biz{font-size:12px;color:var(--text3);margin-top:2px}
+
+/* REMINDERS */
+.remind-row{display:flex;align-items:flex-start;gap:10px;padding:12px 0;border-bottom:1px solid var(--border)}
+.remind-row:last-child{border-bottom:none}
+.remind-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.remind-info{flex:1}
+.remind-title{font-size:14px;font-weight:500}
+.remind-sub{font-size:12px;color:var(--text3);margin-top:2px}
+.remind-right{text-align:right;flex-shrink:0}
+.remind-due{font-size:12px;font-weight:600}
+.remind-freq{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* BADGE */
+.badge{font-size:11px;padding:3px 9px;border-radius:20px;font-weight:600;white-space:nowrap}
+.badge-red{background:var(--red-bg);color:var(--red)}
+.badge-amber{background:var(--amber-bg);color:var(--amber)}
+.badge-green{background:var(--green-bg);color:var(--green)}
+.badge-blue{background:var(--blue-bg);color:var(--blue)}
+
+/* FAB */
+.fab{position:fixed;bottom:1.25rem;right:1.25rem;width:52px;height:52px;border-radius:50%;background:var(--text);color:#fff;border:none;font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.18);z-index:50;transition:transform .15s,opacity .15s}
+.fab:hover{transform:scale(1.05)}
+.fab:active{transform:scale(.95)}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:flex-end;justify-content:center}
+.modal-overlay.open{display:flex}
+@media(min-width:600px){.modal-overlay{align-items:center}}
+.modal{background:var(--surface);border-radius:20px 20px 0 0;padding:1.5rem 1.25rem 2rem;width:100%;max-width:520px;max-height:90vh;overflow-y:auto}
+@media(min-width:600px){.modal{border-radius:16px;padding:1.75rem}}
+.modal-handle{width:40px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 1.25rem}
+.modal h2{font-size:17px;font-weight:600;margin-bottom:1.25rem}
+.form-group{margin-bottom:.875rem}
+.form-group label{display:block;font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 12px;border:1px solid var(--border2);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:15px;background:var(--surface);color:var(--text);outline:none;transition:border-color .15s;-webkit-appearance:none}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--text)}
+.form-group textarea{resize:vertical;min-height:70px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modal-actions{display:flex;gap:10px;margin-top:1.25rem}
+.modal-actions .cancel-btn{flex:1;padding:12px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:none;cursor:pointer;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:15px}
+.modal-actions .save-btn{flex:2;padding:12px;border-radius:var(--radius-sm);border:none;background:var(--text);color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500}
+.del-link{font-size:13px;color:var(--red);cursor:pointer;padding:8px 0;display:inline-block}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:2rem 1rem;color:var(--text3);font-size:14px}
+.activity-badge{font-size:11px;padding:2px 8px;border-radius:20px;background:var(--amber-bg);color:var(--amber);font-weight:600;margin-left:6px}
+</style>
+</head>
+<body>
+
+<!-- MAIN APP -->
+<header>
+  <div class="logo">Properties <span>/ Maintenance</span></div>
+  <div style="display:flex;align-items:center;gap:6px">
+    <span class="sync-dot" id="sync-dot"></span>
+    <span class="sync-label" id="sync-label">Live</span>
+  </div>
+</header>
+
+<div class="metrics">
+  <div class="metric"><div class="metric-num num-red" id="m-overdue">0</div><div class="metric-label">Overdue</div></div>
+  <div class="metric"><div class="metric-num num-amber" id="m-due">0</div><div class="metric-label">This Week</div></div>
+  <div class="metric"><div class="metric-num num-amber" id="m-low">5</div><div class="metric-label">Low Supply</div></div>
+  <div class="metric"><div class="metric-num num-blue" id="m-props">19</div><div class="metric-label">Properties</div></div>
+</div>
+
+<div class="tabs">
+  <button class="tab" onclick="switchTab(&#39;tasks&#39;,this)">Tasks</button>
+  <button class="tab" onclick="switchTab(&#39;supplies&#39;,this)">Supplies</button>
+  <button class="tab" onclick="switchTab(&#39;properties&#39;,this)">Properties</button>
+  <button class="tab active" onclick="switchTab(&#39;reminders&#39;,this)">Reminders</button>
+</div>
+
+<div class="content">
+  <!-- TASKS -->
+  <div class="section" id="sec-tasks">
+    <div class="section-title">Overdue</div>
+    <div class="card danger" id="overdue-list"><div class="empty-state">No overdue tasks 🎉</div></div>
+    <div class="section-title">Due This Week</div>
+    <div class="card" id="week-list"><div class="empty-state">Nothing due this week</div></div>
+    <div class="section-title">All Tasks</div>
+    <div class="card" id="all-tasks-list"><div class="task-row">
+    <div class="task-check" onclick="toggleTask(&#39;-Or_Xe5L5qzmLm_Ve-JX&#39;)"></div>
+    <div class="task-info">
+      <div class="task-name">Replace remote control</div>
+      <div class="task-meta">— · Due </div>
+    </div>
+    <span class="task-assign">Belle Colman</span>
+    <button class="edit-btn" onclick="openEditTask(&#39;-Or_Xe5L5qzmLm_Ve-JX&#39;)">Edit</button>
+  </div></div>
+  </div>
+
+  <!-- SUPPLIES -->
+  <div class="section" id="sec-supplies">
+    <div class="card" id="supply-list"><div class="supply-row">
+      <div style="flex:1;min-width:0">
+        <div class="supply-name">HVAC Filters (20x25)</div>
+        <div class="supply-meta">Buy: Home Depot</div>
+      </div>
+      <div class="supply-right">
+        <span class="badge badge-amber">Low</span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="supply-bar-wrap"><div class="supply-bar" style="width:20%;background:var(--amber)"></div></div>
+          <span class="supply-qty" style="color:var(--amber)">2</span>
+        </div>
+        <button class="reorder-btn" onclick="toggleReorder(&#39;s1&#39;)">Reorder</button>
+      </div>
+      <button class="edit-btn" style="margin-left:8px" onclick="openEditSupply(&#39;s1&#39;)">Edit</button>
+    </div><div class="supply-row">
+      <div style="flex:1;min-width:0">
+        <div class="supply-name">LED Bulbs 60W</div>
+        <div class="supply-meta">Buy: Amazon</div>
+      </div>
+      <div class="supply-right">
+        <span class="badge badge-amber">Low</span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="supply-bar-wrap"><div class="supply-bar" style="width:25%;background:var(--amber)"></div></div>
+          <span class="supply-qty" style="color:var(--amber)">6</span>
+        </div>
+        <button class="reorder-btn" onclick="toggleReorder(&#39;s2&#39;)">Reorder</button>
+      </div>
+      <button class="edit-btn" style="margin-left:8px" onclick="openEditSupply(&#39;s2&#39;)">Edit</button>
+    </div><div class="supply-row">
+      <div style="flex:1;min-width:0">
+        <div class="supply-name">LED Bulbs 100W</div>
+        <div class="supply-meta">Buy: Amazon</div>
+      </div>
+      <div class="supply-right">
+        <span class="badge badge-amber">Low</span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="supply-bar-wrap"><div class="supply-bar" style="width:8%;background:var(--amber)"></div></div>
+          <span class="supply-qty" style="color:var(--amber)">1</span>
+        </div>
+        <button class="reorder-btn" onclick="toggleReorder(&#39;s3&#39;)">Reorder</button>
+      </div>
+      <button class="edit-btn" style="margin-left:8px" onclick="openEditSupply(&#39;s3&#39;)">Edit</button>
+    </div><div class="supply-row">
+      <div style="flex:1;min-width:0">
+        <div class="supply-name">Smoke Detector Batteries</div>
+        <div class="supply-meta">Buy: Walmart</div>
+      </div>
+      <div class="supply-right">
+        <span class="badge badge-amber">Low</span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="supply-bar-wrap"><div class="supply-bar" style="width:20%;background:var(--amber)"></div></div>
+          <span class="supply-qty" style="color:var(--amber)">4</span>
+        </div>
+        <button class="reorder-btn" onclick="toggleReorder(&#39;s4&#39;)">Reorder</button>
+      </div>
+      <button class="edit-btn" style="margin-left:8px" onclick="openEditSupply(&#39;s4&#39;)">Edit</button>
+    </div><div class="supply-row">
+      <div style="flex:1;min-width:0">
+        <div class="supply-name">Water Filters</div>
+        <div class="supply-meta">Buy: Home Depot</div>
+      </div>
+      <div class="supply-right">
+        <span class="badge badge-green">OK</span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="supply-bar-wrap"><div class="supply-bar" style="width:38%;background:var(--green)"></div></div>
+          <span class="supply-qty" style="color:var(--green)">3</span>
+        </div>
+        <button class="reorder-btn" onclick="toggleReorder(&#39;s5&#39;)">Reorder</button>
+      </div>
+      <button class="edit-btn" style="margin-left:8px" onclick="openEditSupply(&#39;s5&#39;)">Edit</button>
+    </div><div class="supply-row">
+      <div style="flex:1;min-width:0">
+        <div class="supply-name">CO Detector Battery</div>
+        <div class="supply-meta">Buy: Walmart</div>
+      </div>
+      <div class="supply-right">
+        <span class="badge badge-amber">Low</span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="supply-bar-wrap"><div class="supply-bar" style="width:20%;background:var(--amber)"></div></div>
+          <span class="supply-qty" style="color:var(--amber)">2</span>
+        </div>
+        <button class="reorder-btn" onclick="toggleReorder(&#39;s6&#39;)">Reorder</button>
+      </div>
+      <button class="edit-btn" style="margin-left:8px" onclick="openEditSupply(&#39;s6&#39;)">Edit</button>
+    </div></div>
+  </div>
+
+  <!-- PROPERTIES -->
+  <div class="section" id="sec-properties">
+    <div class="card" id="prop-list"><div class="prop-row">
+      <div class="prop-icon">🏠</div>
+      <div class="prop-info">
+        <div class="prop-name">Blue Ridge House</div>
+        <div class="prop-biz">Q8 Investments</div>
+      </div>
+      <span class="badge badge-green">All clear</span>
+      <button class="edit-btn" style="margin-left:8px" onclick="openEditProp(&#39;-Or_HfwQAe8ZxVmVA0Xw&#39;)">Edit</button>
+    </div><div class="prop-row">
+      <div class="prop-icon">🏠</div>
+      <div class="prop-info">
+        <div class="prop-name">Unit: C - Socorro's House</div>
+        <div class="prop-biz">Melissa Feeders, LLC · 5376 FM 545, Melissa TX 75454 (Trlr south of commodity barn; closest east trlr)</div>
+      </div>
+      <span class="badge badge-green">All clear</span>
+      <button class="edit-btn" style="margin-left:8px" onclick="openEditProp(&#39;-OrnYCVANKN1SuKXUR39&#39;)">Edit</button>
+    </div><div class="prop-row">
+      <div class="prop-icon">🏠</div>
+      <div class="prop-info">
+        <div class="prop-name">Unit: D - Cirilio's House</div>
+        <div class="prop-biz">Melissa Feeders, LLC · 5376 FM 545, Melissa TX 75454 (Trlr south of commodity barn; closest west trlr)</div>
+      </div>
+      <span class="badge badge-green">All clear</span>
+      <button class="edit-btn" style="margin-left:8px" onclick="openEditProp(&#39;-OrnZh9Rqsk4tEDh-AB-&#39;)">Edit</button>
+    </div><div class="prop-row">
+      <div class="prop-icon">🏠</div>
+      <div class="prop-info">
+        <div class="prop-name">Unit: E - Cowboy House (Adrian, Andrew)</div>
+        <div class="prop-biz">Melissa Feeders, LLC · 5376 FM 545, Melissa TX 75454 (Trlr north of processing barn)</div>
+      </div>
+      <span class="badge badge-green">All clear</span>
+      <button class="edit-btn" style="margin-left:8px" onclick="openEditProp(&#39;-Orn_4NeJRyctSV7JVNF&#39;)">Edit</button>
+    </div><div class="prop-row">
+      <div class="prop-icon">🏠</div>
+      <div class="prop-info">
+        <div class="prop-name">Unit: F - Paco's House</div>
+        <div class="prop-biz">Melissa Feeders · 8292 CR 1095, Melissa TX 75454(west trlr (closest to road)</div>
+      </div>
+      <span class="badge badge-green">All clear</span>
+      <button class="edit-btn" style="margin-left:8px" onclick="openEditProp(&#39;-Orn_I_-qtGjxb0bHzaj&#39;)">Edit</button>
+    </div><div class="prop-row">
+      <div class="prop-icon">🏠</div>
+      <div class="prop-info">
+        <div class="prop-name">Unit: G - Daniela &amp; Edison's House</div>
+        <div class="prop-biz">Melissa Feeders, LLC · 8270 CR 1095, Melissa TX 75454 (middle trlr)</div>
+      </div>
+      <span class="badge badge-green">All clear</span>
+      <button class="edit-btn" style="margin-left:8px" onclick="openEditProp(&#39;-Orn_Ua5sZnSrod6_RTS&#39;)">Edit</button>
+    </div><div class="prop-row">
+      <div class="prop-icon">🏠</div>
+      <div class="prop-info">
+        <div class="prop-name">Unit: H - Valente's House</div>
+        <div class="prop-biz">Melissa Feedes, LLC · 8268 CR 1095, Melissa TX 75454 (furtherest from road)</div>
+      </div>
+      <span class="badge badge-green">All clear</span>
+      <button class="edit-btn" style="margin-left:8px" onclick="openEditProp(&#39;-Orn_x4vFBn3fYcdHCIT&#39;)">Edit</button>
+    </div><div class="prop-row">
+      <div class="prop-icon">🏠</div>
+      <div class="prop-info">
+        <div class="prop-name">Unit: J1 - Lance's House</div>
+        <div class="prop-biz">Chambliss Land · 9591 CR 472, Anna, TX 75409</div>
+      </div>
+      <span class="badge badge-green">All clear</span>
+      <button class="edit-btn" style="margin-left:8px" onclick="openEditProp(&#39;-OrnbzQT658m0wED8dpt&#39;)">Edit</button>
+    </div><div class="prop-row">
+      <div class="prop-icon">🏠</div>
+      <div class="prop-info">
+        <div class="prop-name">Unit: J2 - Kathy Moss's  House</div>
+        <div class="prop-biz">Chambliss Land · 9655 CR 472, Anna, TX 75409</div>
+      </div>
+      <span class="badge badge-green">All clear</span>
+      <button class="edit-btn" style="margin-left:8px" onclick="openEditProp(&#39;-OrncrxIktmtqzzHNRL8&#39;)">Edit</button>
+    </div><div class="prop-row">
+      <div class="prop-icon">🏠</div>
+      <div class="prop-info">
+        <div class="prop-name">Unit: K - Angel's House</div>
+        <div class="prop-biz">Melissa Feeders · 5968 FM 545, Anna TX 75409</div>
+      </div>
+      <span class="badge badge-green">All clear</span>
+      <button class="edit-btn" style="margin-left:8px" onclick="openEditProp(&#39;-Orndaz201LXmSRdhzZR&#39;)">Edit</button>
+    </div><div class="prop-row">
+      <div class="prop-icon">🏠</div>
+      <div class="prop-info">
+        <div class="prop-name">Unit: L</div>
+        <div class="prop-biz">Melissa Feeders, LLC · 8785 FM 1827, Anna TX 75409</div>
+      </div>
+      <span class="badge badge-green">All clear</span>
+      <button class="edit-btn" style="margin-left:8px" onclick="openEditProp(&#39;-OrndtIWvf_64EVZSvZG&#39;)">Edit</button>
+    </div><div class="prop-row">
+      <div class="prop-icon">🏢</div>
+      <div class="prop-info">
+        <div class="prop-name">WES Arena</div>
+        <div class="prop-biz">WES Feeders, LLC · 5926 CR 500, Blue Ridge</div>
+      </div>
+      <span class="badge badge-green">All clear</span>
+      <button class="edit-btn" style="margin-left:8px" onclick="openEditProp(&#39;p1&#39;)">Edit</button>
+    </div><div class="prop-row">
+      <div class="prop-icon">🏢</div>
+      <div class="prop-info">
+        <div class="prop-name">Melissa Feeders</div>
+        <div class="prop-biz">Melissa Feeders, LLC · 5376 FM 545 Melissa, Tx 75454</div>
+      </div>
+      <span class="badge badge-green">All clear</span>
+      <button class="edit-btn" style="margin-left:8px" onclick="openEditProp(&#39;p2&#39;)">Edit</button>
+    </div><div class="prop-row">
+      <div class="prop-icon">🏠</div>
+      <div class="prop-info">
+        <div class="prop-name">Unit: N - German's House</div>
+        <div class="prop-biz">Melissa Feeders · 6036 FM 545, Melissa TX  75454</div>
+      </div>
+      <span class="badge badge-green">All clear</span>
+      <button class="edit-btn" style="margin-left:8px" onclick="openEditProp(&#39;p3&#39;)">Edit</button>
+    </div><div class="prop-row">
+      <div class="prop-icon">🏠</div>
+      <div class="prop-info">
+        <div class="prop-name">Unit: M - Arena AirBnB</div>
+        <div class="prop-biz">WES Feeders LLC · 5925 CR 500, Blue Ridge</div>
+      </div>
+      <span class="badge badge-green">All clear</span>
+      <button class="edit-btn" style="margin-left:8px" onclick="openEditProp(&#39;p4&#39;)">Edit</button>
+    </div><div class="prop-row">
+      <div class="prop-icon">🏠</div>
+      <div class="prop-info">
+        <div class="prop-name">Unit: Y - Airhart AirBnB</div>
+        <div class="prop-biz">WES Feeders, LLC · 5924 CR 500, Blue Ridge</div>
+      </div>
+      <span class="badge badge-green">All clear</span>
+      <button class="edit-btn" style="margin-left:8px" onclick="openEditProp(&#39;p5&#39;)">Edit</button>
+    </div><div class="prop-row">
+      <div class="prop-icon">🏠</div>
+      <div class="prop-info">
+        <div class="prop-name">Unit: X - Cabin AirBnB</div>
+        <div class="prop-biz">WES Feeders, LLC · 5924 CR 500, Blue Ridge</div>
+      </div>
+      <span class="badge badge-green">All clear</span>
+      <button class="edit-btn" style="margin-left:8px" onclick="openEditProp(&#39;p6&#39;)">Edit</button>
+    </div><div class="prop-row">
+      <div class="prop-icon">🏠</div>
+      <div class="prop-info">
+        <div class="prop-name">Unit: A - Jose's House</div>
+        <div class="prop-biz">Melissa Feeders, LLC · 5376 FM 545, Melissa TX 75454</div>
+      </div>
+      <span class="badge badge-green">All clear</span>
+      <button class="edit-btn" style="margin-left:8px" onclick="openEditProp(&#39;p7&#39;)">Edit</button>
+    </div><div class="prop-row">
+      <div class="prop-icon">🏠</div>
+      <div class="prop-info">
+        <div class="prop-name">Unit: B - Pedro's House</div>
+        <div class="prop-biz">Melissa Feeders, LLC · 5376 FM 545, Melissa TX 75454</div>
+      </div>
+      <span class="badge badge-green">All clear</span>
+      <button class="edit-btn" style="margin-left:8px" onclick="openEditProp(&#39;p8&#39;)">Edit</button>
+    </div></div>
+  </div>
+
+  <!-- REMINDERS -->
+  <div class="section active" id="sec-reminders">
+    <div class="card" id="remind-list"><div class="remind-row">
+      <div class="remind-dot" style="background:#B83228"></div>
+      <div class="remind-info">
+        <div class="remind-title">Smoke Alarm Test</div>
+        <div class="remind-sub">All properties</div>
+      </div>
+      <div class="remind-right">
+        <div class="remind-due" style="color:var(--red)">Next: May 1 ⚠</div>
+        <div class="remind-freq">Monthly</div>
+      </div>
+      <button class="edit-btn" style="margin-left:8px" onclick="openEditRemind(&#39;r2&#39;)">Edit</button>
+    </div><div class="remind-row">
+      <div class="remind-dot" style="background:#2A6E38"></div>
+      <div class="remind-info">
+        <div class="remind-title">Water Filter Change</div>
+        <div class="remind-sub">Cedar + Oak Lane</div>
+      </div>
+      <div class="remind-right">
+        <div class="remind-due" style="color:var(--red)">Next: May 10 ⚠</div>
+        <div class="remind-freq">Every 2 months</div>
+      </div>
+      <button class="edit-btn" style="margin-left:8px" onclick="openEditRemind(&#39;r4&#39;)">Edit</button>
+    </div><div class="remind-row">
+      <div class="remind-dot" style="background:#1356A0"></div>
+      <div class="remind-info">
+        <div class="remind-title">HVAC Filter Replacement</div>
+        <div class="remind-sub">All properties</div>
+      </div>
+      <div class="remind-right">
+        <div class="remind-due" style="color:var(--red)">Next: May 15 ⚠</div>
+        <div class="remind-freq">Quarterly</div>
+      </div>
+      <button class="edit-btn" style="margin-left:8px" onclick="openEditRemind(&#39;r1&#39;)">Edit</button>
+    </div><div class="remind-row">
+      <div class="remind-dot" style="background:#1356A0"></div>
+      <div class="remind-info">
+        <div class="remind-title">Fire Extinguisher Check</div>
+        <div class="remind-sub">All properties</div>
+      </div>
+      <div class="remind-right">
+        <div class="remind-due" style="color:var(--red)">Next: Jun 1 ⚠</div>
+        <div class="remind-freq">Every 6 months</div>
+      </div>
+      <button class="edit-btn" style="margin-left:8px" onclick="openEditRemind(&#39;r3&#39;)">Edit</button>
+    </div><div class="remind-row">
+      <div class="remind-dot" style="background:#A05C08"></div>
+      <div class="remind-info">
+        <div class="remind-title">CO Detector Battery</div>
+        <div class="remind-sub">All properties</div>
+      </div>
+      <div class="remind-right">
+        <div class="remind-due" style="color:var(--red)">Next: Jun 15 ⚠</div>
+        <div class="remind-freq">Every 6 months</div>
+      </div>
+      <button class="edit-btn" style="margin-left:8px" onclick="openEditRemind(&#39;r5&#39;)">Edit</button>
+    </div></div>
+  </div>
+</div>
+
+<button class="fab" id="fab-btn" onclick="openAddModal()">+</button>
+
+<!-- TASK MODAL -->
+<div class="modal-overlay" id="modal-task-overlay" onclick="closeIfOut(event,&#39;modal-task-overlay&#39;)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2 id="task-modal-title">Add Task</h2>
+    <input type="hidden" id="task-edit-id">
+    <div class="form-group"><label>Task Name</label><input type="text" id="task-name" placeholder="e.g. Replace HVAC filter"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Property</label><select id="task-prop"></select></div>
+      <div class="form-group"><label>Assigned To</label><input type="text" id="task-assignee" placeholder="Mike or Ray"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Due Date</label><input type="date" id="task-due"></div>
+      <div class="form-group"><label>Priority</label>
+        <select id="task-priority"><option value="normal">Normal</option><option value="high">High</option><option value="low">Low</option></select>
+      </div>
+    </div>
+    <div class="form-group"><label>Notes</label><textarea id="task-notes" placeholder="Optional notes..."></textarea></div>
+    <span class="del-link" id="task-del-link" style="display:none" onclick="deleteTask()">Delete task</span>
+    <div class="modal-actions">
+      <button class="cancel-btn" onclick="closeModal(&#39;modal-task-overlay&#39;)">Cancel</button>
+      <button class="save-btn" onclick="saveTask()">Save Task</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUPPLY MODAL -->
+<div class="modal-overlay" id="modal-supply-overlay" onclick="closeIfOut(event,&#39;modal-supply-overlay&#39;)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2 id="supply-modal-title">Add Supply Item</h2>
+    <input type="hidden" id="supply-edit-id">
+    <div class="form-group"><label>Item Name</label><input type="text" id="supply-name-inp" placeholder="e.g. HVAC Filters 20x25"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Current Qty</label><input type="number" id="supply-qty" min="0" value="0"></div>
+      <div class="form-group"><label>Unit</label><input type="text" id="supply-unit" placeholder="filters, bulbs..."></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Reorder When Below</label><input type="number" id="supply-reorder" min="1" value="3"></div>
+      <div class="form-group"><label>Max Stock</label><input type="number" id="supply-max" min="1" value="12"></div>
+    </div>
+    <div class="form-group"><label>Where to Buy</label><input type="text" id="supply-supplier" placeholder="Home Depot, Amazon..."></div>
+    <span class="del-link" id="supply-del-link" style="display:none" onclick="deleteSupply()">Delete item</span>
+    <div class="modal-actions">
+      <button class="cancel-btn" onclick="closeModal(&#39;modal-supply-overlay&#39;)">Cancel</button>
+      <button class="save-btn" onclick="saveSupply()">Save Item</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROPERTY MODAL -->
+<div class="modal-overlay" id="modal-prop-overlay" onclick="closeIfOut(event,&#39;modal-prop-overlay&#39;)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2 id="prop-modal-title">Add Property</h2>
+    <input type="hidden" id="prop-edit-id">
+    <div class="form-group"><label>Property Name</label><input type="text" id="prop-name-inp" placeholder="e.g. Oak Lane House"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Business</label><input type="text" id="prop-biz" placeholder="Realty Co"></div>
+      <div class="form-group"><label>Type</label>
+        <select id="prop-type"><option value="🏠">House</option><option value="🏢">Facility</option><option value="🏘">Duplex</option><option value="🏗">Other</option></select>
+      </div>
+    </div>
+    <div class="form-group"><label>Address (optional)</label><input type="text" id="prop-address" placeholder="Street address"></div>
+    <span class="del-link" id="prop-del-link" style="display:none" onclick="deleteProperty()">Delete property</span>
+    <div class="modal-actions">
+      <button class="cancel-btn" onclick="closeModal(&#39;modal-prop-overlay&#39;)">Cancel</button>
+      <button class="save-btn" onclick="saveProperty()">Save Property</button>
+    </div>
+  </div>
+</div>
+
+<!-- REMINDER MODAL -->
+<div class="modal-overlay" id="modal-remind-overlay" onclick="closeIfOut(event,&#39;modal-remind-overlay&#39;)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2 id="remind-modal-title">Add Reminder</h2>
+    <input type="hidden" id="remind-edit-id">
+    <div class="form-group"><label>Reminder Title</label><input type="text" id="remind-title-inp" placeholder="e.g. HVAC Filter Replacement"></div>
+    <div class="form-group"><label>Applies To</label><input type="text" id="remind-applies" placeholder="All properties, or specific name"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Frequency</label>
+        <select id="remind-freq">
+          <option>Monthly</option><option>Every 2 months</option><option>Quarterly</option><option>Every 6 months</option><option>Yearly</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Next Due</label><input type="date" id="remind-next"></div>
+    </div>
+    <div class="form-group"><label>Color</label>
+      <select id="remind-color">
+        <option value="#1356A0">Blue</option><option value="#B83228">Red</option><option value="#A05C08">Amber</option>
+        <option value="#2A6E38">Green</option><option value="#6B3AB5">Purple</option>
+      </select>
+    </div>
+    <span class="del-link" id="remind-del-link" style="display:none" onclick="deleteReminder()">Delete reminder</span>
+    <div class="modal-actions">
+      <button class="cancel-btn" onclick="closeModal(&#39;modal-remind-overlay&#39;)">Cancel</button>
+      <button class="save-btn" onclick="saveReminder()">Save Reminder</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getDatabase, ref, set, push, remove, onValue, update } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+// ── STATE ──
+let DB = null, db = null;
+let data = { tasks:{}, supplies:{}, properties:{}, reminders:{} };
+let currentTab = 'tasks';
+
+const DB_URL = 'https://property-maintenance-tra-50a03-default-rtdb.firebaseio.com/';
+
+// Auto-initialize on load
+(async function() {
+  try {
+    const app = initializeApp({ databaseURL: DB_URL }, 'maint-app');
+    db = getDatabase(app);
+    connectListeners();
+    seedIfEmpty();
+  } catch(e) {
+    console.error('Firebase init failed:', e);
+    setOnline(false);
+  }
+})();
+
+function connectListeners() {
+  const sections = ['tasks','supplies','properties','reminders'];
+  sections.forEach(sec => {
+    onValue(ref(db, sec), snap => {
+      data[sec] = snap.val() || {};
+      renderAll();
+      setOnline(true);
+    }, () => setOnline(false));
+  });
+}
+
+function setOnline(on) {
+  document.getElementById('sync-dot').className = 'sync-dot' + (on ? '' : ' offline');
+  document.getElementById('sync-label').textContent = on ? 'Live' : 'Offline';
+}
+
+
+
+// ── SEED DATA ──
+async function seedIfEmpty() {
+  onValue(ref(db, 'seeded'), snap => {
+    if (snap.val()) return;
+    const seed = {
+      tasks:{
+        t1:{name:'Replace HVAC filter',prop:'Oak Lane House',assignee:'Mike',due:'2025-04-22',done:false,notes:'',priority:'high'},
+        t2:{name:'Test smoke alarms',prop:'Elm St Facility',assignee:'Ray',due:'2025-04-25',done:false,notes:'',priority:'high'},
+        t3:{name:'Replace kitchen bulbs',prop:'Pine Ridge House',assignee:'Mike',due:'2025-04-28',done:false,notes:'3 bulbs',priority:'normal'},
+        t4:{name:'Inspect fire extinguisher',prop:'Maple Ave House',assignee:'Ray',due:'2025-05-02',done:false,notes:'',priority:'normal'},
+        t5:{name:'Change water filter',prop:'Cedar House',assignee:'Mike',due:'2025-05-03',done:false,notes:'',priority:'normal'},
+      },
+      supplies:{
+        s1:{name:'HVAC Filters (20x25)',qty:2,unit:'filters',reorder:3,max:10,supplier:'Home Depot',reordered:false},
+        s2:{name:'LED Bulbs 60W',qty:6,unit:'bulbs',reorder:6,max:24,supplier:'Amazon',reordered:false},
+        s3:{name:'LED Bulbs 100W',qty:1,unit:'bulbs',reorder:4,max:12,supplier:'Amazon',reordered:false},
+        s4:{name:'Smoke Detector Batteries',qty:4,unit:'pcs',reorder:6,max:20,supplier:'Walmart',reordered:false},
+        s5:{name:'Water Filters',qty:3,unit:'filters',reorder:2,max:8,supplier:'Home Depot',reordered:false},
+        s6:{name:'CO Detector Battery',qty:2,unit:'pcs',reorder:4,max:10,supplier:'Walmart',reordered:false},
+      },
+      properties:{
+        p1:{name:'Oak Lane House',biz:'Realty Co',type:'🏠',address:''},
+        p2:{name:'Elm St Facility',biz:'Holdings LLC',type:'🏢',address:''},
+        p3:{name:'Pine Ridge House',biz:'Realty Co',type:'🏠',address:''},
+        p4:{name:'Maple Ave House',biz:'Holdings LLC',type:'🏠',address:''},
+        p5:{name:'Cedar House',biz:'Realty Co',type:'🏠',address:''},
+        p6:{name:'Birch Lane Unit',biz:'Realty Co',type:'🏠',address:''},
+        p7:{name:'Commerce Facility',biz:'Holdings LLC',type:'🏢',address:''},
+        p8:{name:'Sunset Duplex',biz:'Realty Co',type:'🏘',address:''},
+      },
+      reminders:{
+        r1:{title:'HVAC Filter Replacement',applies:'All properties',freq:'Quarterly',next:'2025-05-15',color:'#1356A0'},
+        r2:{title:'Smoke Alarm Test',applies:'All properties',freq:'Monthly',next:'2025-05-01',color:'#B83228'},
+        r3:{title:'Fire Extinguisher Check',applies:'Elm St + Commerce',freq:'Every 6 months',next:'2025-06-01',color:'#993C1D'},
+        r4:{title:'Water Filter Change',applies:'Cedar + Oak Lane',freq:'Every 2 months',next:'2025-05-10',color:'#2A6E38'},
+        r5:{title:'CO Detector Battery',applies:'All properties',freq:'Every 6 months',next:'2025-06-15',color:'#A05C08'},
+      },
+      seeded: true
+    };
+    set(ref(db, '/'), seed);
+  }, {onlyOnce:true});
+}
+
+// ── HELPERS ──
+function today() { return new Date().toISOString().split('T')[0]; }
+function isOverdue(d) { return d && d < today() && d !== ''; }
+function isThisWeek(d) {
+  if (!d || d < today()) return false;
+  const t = new Date(); t.setDate(t.getDate()+7);
+  return d <= t.toISOString().split('T')[0];
+}
+function fmtDate(d) {
+  if (!d) return '';
+  const dt = new Date(d + 'T12:00:00');
+  return dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+}
+
+// ── RENDER ──
+function renderAll() {
+  renderTasks(); renderSupplies(); renderProperties(); renderReminders(); updateMetrics();
+}
+
+function updateMetrics() {
+  const tasks = Object.values(data.tasks||{});
+  const od = tasks.filter(t=>!t.done&&isOverdue(t.due)).length;
+  const wk = tasks.filter(t=>!t.done&&isThisWeek(t.due)).length;
+  const low = Object.values(data.supplies||{}).filter(s=>s.qty<=s.reorder).length;
+  const props = Object.keys(data.properties||{}).length;
+  document.getElementById('m-overdue').textContent = od;
+  document.getElementById('m-due').textContent = wk;
+  document.getElementById('m-low').textContent = low;
+  document.getElementById('m-props').textContent = props;
+}
+
+function taskRow(id, t) {
+  const od = isOverdue(t.due);
+  return `<div class="task-row${t.done?' task-done':''}">
+    <div class="task-check${t.done?' done':''}" onclick="toggleTask('${id}')">${t.done?'✓':''}</div>
+    <div class="task-info">
+      <div class="task-name">${t.name}${od&&!t.done?'<span class="overdue-badge">Overdue</span>':''}</div>
+      <div class="task-meta">${t.prop||'—'} · Due ${fmtDate(t.due)}</div>
+    </div>
+    <span class="task-assign">${t.assignee||'—'}</span>
+    <button class="edit-btn" onclick="openEditTask('${id}')">Edit</button>
+  </div>`;
+}
+
+function renderTasks() {
+  const tasks = data.tasks||{};
+  const od = Object.entries(tasks).filter(([,t])=>!t.done&&isOverdue(t.due));
+  const wk = Object.entries(tasks).filter(([,t])=>!t.done&&isThisWeek(t.due));
+  const rest = Object.entries(tasks).filter(([,t])=>!t.done&&!isOverdue(t.due)&&!isThisWeek(t.due));
+  const done = Object.entries(tasks).filter(([,t])=>t.done);
+
+  document.getElementById('overdue-list').innerHTML = od.length
+    ? od.map(([id,t])=>taskRow(id,t)).join('')
+    : '<div class="empty-state">No overdue tasks 🎉</div>';
+  document.getElementById('week-list').innerHTML = wk.length
+    ? wk.map(([id,t])=>taskRow(id,t)).join('')
+    : '<div class="empty-state">Nothing due this week</div>';
+
+  let html = rest.map(([id,t])=>taskRow(id,t)).join('');
+  if (done.length) {
+    html += `<div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:12px 0 6px;border-top:1px solid var(--border);margin-top:8px">Completed (${done.length})</div>`;
+    html += done.map(([id,t])=>taskRow(id,t)).join('');
+  }
+  document.getElementById('all-tasks-list').innerHTML = html || '<div class="empty-state">No tasks yet — tap + to add one</div>';
+}
+
+function renderSupplies() {
+  const supplies = data.supplies||{};
+  const html = Object.entries(supplies).map(([id,s]) => {
+    const pct = Math.min(100,Math.round((s.qty/s.max)*100));
+    const low = s.qty <= s.reorder;
+    const color = s.qty===0?'var(--red)':low?'var(--amber)':'var(--green)';
+    const badge = s.qty===0?'<span class="badge badge-red">Out</span>':low?'<span class="badge badge-amber">Low</span>':'<span class="badge badge-green">OK</span>';
+    return `<div class="supply-row">
+      <div style="flex:1;min-width:0">
+        <div class="supply-name">${s.name}</div>
+        <div class="supply-meta">${s.supplier?'Buy: '+s.supplier:''}</div>
+      </div>
+      <div class="supply-right">
+        ${badge}
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="supply-bar-wrap"><div class="supply-bar" style="width:${pct}%;background:${color}"></div></div>
+          <span class="supply-qty" style="color:${color}">${s.qty}</span>
+        </div>
+        <button class="reorder-btn${s.reordered?' ordered':''}" onclick="toggleReorder('${id}')">${s.reordered?'✓ Ordered':'Reorder'}</button>
+      </div>
+      <button class="edit-btn" style="margin-left:8px" onclick="openEditSupply('${id}')">Edit</button>
+    </div>`;
+  }).join('');
+  document.getElementById('supply-list').innerHTML = html || '<div class="empty-state">No supplies tracked — tap + to add</div>';
+}
+
+function renderProperties() {
+  const props = data.properties||{};
+  const tasks = data.tasks||{};
+  const html = Object.entries(props).map(([id,p]) => {
+    const open = Object.values(tasks).filter(t=>!t.done&&t.prop===p.name).length;
+    const badge = open===0?'<span class="badge badge-green">All clear</span>':open>=3?`<span class="badge badge-red">${open} open</span>`:`<span class="badge badge-amber">${open} open</span>`;
+    return `<div class="prop-row">
+      <div class="prop-icon">${p.type}</div>
+      <div class="prop-info">
+        <div class="prop-name">${p.name}</div>
+        <div class="prop-biz">${p.biz}${p.address?' · '+p.address:''}</div>
+      </div>
+      ${badge}
+      <button class="edit-btn" style="margin-left:8px" onclick="openEditProp('${id}')">Edit</button>
+    </div>`;
+  }).join('');
+  document.getElementById('prop-list').innerHTML = html || '<div class="empty-state">No properties yet — tap + to add</div>';
+}
+
+function renderReminders() {
+  const reminders = data.reminders||{};
+  const sorted = Object.entries(reminders).sort((a,b)=>a[1].next?.localeCompare(b[1].next||'')||0);
+  const html = sorted.map(([id,r]) => {
+    const od = r.next && r.next < today();
+    return `<div class="remind-row">
+      <div class="remind-dot" style="background:${r.color}"></div>
+      <div class="remind-info">
+        <div class="remind-title">${r.title}</div>
+        <div class="remind-sub">${r.applies}</div>
+      </div>
+      <div class="remind-right">
+        <div class="remind-due" style="color:${od?'var(--red)':r.color}">Next: ${fmtDate(r.next)}${od?' ⚠':''}</div>
+        <div class="remind-freq">${r.freq}</div>
+      </div>
+      <button class="edit-btn" style="margin-left:8px" onclick="openEditRemind('${id}')">Edit</button>
+    </div>`;
+  }).join('');
+  document.getElementById('remind-list').innerHTML = html || '<div class="empty-state">No reminders yet — tap + to add</div>';
+}
+
+// ── TOGGLE ──
+window.toggleTask = function(id) {
+  if (!db) return;
+  const t = data.tasks[id];
+  if (!t) return;
+  update(ref(db,'tasks/'+id), {done:!t.done});
+};
+
+window.toggleReorder = function(id) {
+  if (!db) return;
+  const s = data.supplies[id];
+  if (!s) return;
+  update(ref(db,'supplies/'+id), {reordered:!s.reordered});
+};
+
+// ── MODALS ──
+window.switchTab = function(tab, el) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('sec-'+tab).classList.add('active');
+};
+
+window.openAddModal = function() {
+  if (currentTab==='tasks') openEditTask(null);
+  else if (currentTab==='supplies') openEditSupply(null);
+  else if (currentTab==='properties') openEditProp(null);
+  else if (currentTab==='reminders') openEditRemind(null);
+};
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+window.closeModal = function(id) { document.getElementById(id).classList.remove('open'); };
+window.closeIfOut = function(e, id) { if (e.target.id===id) closeModal(id); };
+
+// TASK
+window.openEditTask = function(id) {
+  const t = id ? data.tasks[id] : null;
+  document.getElementById('task-modal-title').textContent = t ? 'Edit Task' : 'Add Task';
+  document.getElementById('task-edit-id').value = id||'';
+  document.getElementById('task-name').value = t?.name||'';
+  document.getElementById('task-due').value = t?.due||'';
+  document.getElementById('task-assignee').value = t?.assignee||'';
+  document.getElementById('task-notes').value = t?.notes||'';
+  document.getElementById('task-priority').value = t?.priority||'normal';
+  document.getElementById('task-del-link').style.display = t?'inline-block':'none';
+  const sel = document.getElementById('task-prop');
+  sel.innerHTML = Object.values(data.properties||{}).map(p=>`<option value="${p.name}"${t?.prop===p.name?' selected':''}>${p.name}</option>`).join('');
+  openModal('modal-task-overlay');
+};
+
+window.saveTask = function() {
+  if (!db) return;
+  const id = document.getElementById('task-edit-id').value;
+  const name = document.getElementById('task-name').value.trim();
+  if (!name) { alert('Please enter a task name.'); return; }
+  const obj = {
+    name, prop: document.getElementById('task-prop').value,
+    due: document.getElementById('task-due').value,
+    assignee: document.getElementById('task-assignee').value.trim(),
+    notes: document.getElementById('task-notes').value.trim(),
+    priority: document.getElementById('task-priority').value,
+    done: id ? (data.tasks[id]?.done||false) : false
+  };
+  if (id) update(ref(db,'tasks/'+id), obj);
+  else push(ref(db,'tasks'), obj);
+  closeModal('modal-task-overlay');
+};
+
+window.deleteTask = function() {
+  if (!db) return;
+  const id = document.getElementById('task-edit-id').value;
+  if (id && confirm('Delete this task?')) { remove(ref(db,'tasks/'+id)); closeModal('modal-task-overlay'); }
+};
+
+// SUPPLY
+window.openEditSupply = function(id) {
+  const s = id ? data.supplies[id] : null;
+  document.getElementById('supply-modal-title').textContent = s ? 'Edit Supply' : 'Add Supply';
+  document.getElementById('supply-edit-id').value = id||'';
+  document.getElementById('supply-name-inp').value = s?.name||'';
+  document.getElementById('supply-qty').value = s?.qty??0;
+  document.getElementById('supply-unit').value = s?.unit||'';
+  document.getElementById('supply-reorder').value = s?.reorder??3;
+  document.getElementById('supply-max').value = s?.max??12;
+  document.getElementById('supply-supplier').value = s?.supplier||'';
+  document.getElementById('supply-del-link').style.display = s?'inline-block':'none';
+  openModal('modal-supply-overlay');
+};
+
+window.saveSupply = function() {
+  if (!db) return;
+  const id = document.getElementById('supply-edit-id').value;
+  const name = document.getElementById('supply-name-inp').value.trim();
+  if (!name) { alert('Please enter an item name.'); return; }
+  const obj = {
+    name, qty:parseInt(document.getElementById('supply-qty').value)||0,
+    unit:document.getElementById('supply-unit').value.trim()||'units',
+    reorder:parseInt(document.getElementById('supply-reorder').value)||3,
+    max:parseInt(document.getElementById('supply-max').value)||12,
+    supplier:document.getElementById('supply-supplier').value.trim(),
+    reordered: id?(data.supplies[id]?.reordered||false):false
+  };
+  if (id) update(ref(db,'supplies/'+id), obj);
+  else push(ref(db,'supplies'), obj);
+  closeModal('modal-supply-overlay');
+};
+
+window.deleteSupply = function() {
+  if (!db) return;
+  const id = document.getElementById('supply-edit-id').value;
+  if (id && confirm('Delete this item?')) { remove(ref(db,'supplies/'+id)); closeModal('modal-supply-overlay'); }
+};
+
+// PROPERTY
+window.openEditProp = function(id) {
+  const p = id ? data.properties[id] : null;
+  document.getElementById('prop-modal-title').textContent = p ? 'Edit Property' : 'Add Property';
+  document.getElementById('prop-edit-id').value = id||'';
+  document.getElementById('prop-name-inp').value = p?.name||'';
+  document.getElementById('prop-biz').value = p?.biz||'';
+  document.getElementById('prop-type').value = p?.type||'🏠';
+  document.getElementById('prop-address').value = p?.address||'';
+  document.getElementById('prop-del-link').style.display = p?'inline-block':'none';
+  openModal('modal-prop-overlay');
+};
+
+window.saveProperty = function() {
+  if (!db) return;
+  const id = document.getElementById('prop-edit-id').value;
+  const name = document.getElementById('prop-name-inp').value.trim();
+  if (!name) { alert('Please enter a property name.'); return; }
+  const obj = {
+    name, biz:document.getElementById('prop-biz').value.trim(),
+    type:document.getElementById('prop-type').value,
+    address:document.getElementById('prop-address').value.trim()
+  };
+  if (id) update(ref(db,'properties/'+id), obj);
+  else push(ref(db,'properties'), obj);
+  closeModal('modal-prop-overlay');
+};
+
+window.deleteProperty = function() {
+  if (!db) return;
+  const id = document.getElementById('prop-edit-id').value;
+  if (id && confirm('Delete this property?')) { remove(ref(db,'properties/'+id)); closeModal('modal-prop-overlay'); }
+};
+
+// REMINDER
+window.openEditRemind = function(id) {
+  const r = id ? data.reminders[id] : null;
+  document.getElementById('remind-modal-title').textContent = r ? 'Edit Reminder' : 'Add Reminder';
+  document.getElementById('remind-edit-id').value = id||'';
+  document.getElementById('remind-title-inp').value = r?.title||'';
+  document.getElementById('remind-applies').value = r?.applies||'';
+  document.getElementById('remind-freq').value = r?.freq||'Monthly';
+  document.getElementById('remind-next').value = r?.next||'';
+  document.getElementById('remind-color').value = r?.color||'#1356A0';
+  document.getElementById('remind-del-link').style.display = r?'inline-block':'none';
+  openModal('modal-remind-overlay');
+};
+
+window.saveReminder = function() {
+  if (!db) return;
+  const id = document.getElementById('remind-edit-id').value;
+  const title = document.getElementById('remind-title-inp').value.trim();
+  if (!title) { alert('Please enter a title.'); return; }
+  const obj = {
+    title, applies:document.getElementById('remind-applies').value.trim(),
+    freq:document.getElementById('remind-freq').value,
+    next:document.getElementById('remind-next').value,
+    color:document.getElementById('remind-color').value
+  };
+  if (id) update(ref(db,'reminders/'+id), obj);
+  else push(ref(db,'reminders'), obj);
+  closeModal('modal-remind-overlay');
+};
+
+window.deleteReminder = function() {
+  if (!db) return;
+  const id = document.getElementById('remind-edit-id').value;
+  if (id && confirm('Delete this reminder?')) { remove(ref(db,'reminders/'+id)); closeModal('modal-remind-overlay'); }
+};
+</script>
+
+
+</body></html>
